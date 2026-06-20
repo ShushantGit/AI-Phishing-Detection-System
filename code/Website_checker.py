@@ -31,7 +31,7 @@ except ImportError:
 init(autoreset=True)
 console = Console()
 
-API_KEY      = "Hide for security"
+API_KEY      = "Your key"
 DATASET_PATH = "Database.csv"
 MODEL_PATH   = "phishing_model.pkl"
 
@@ -184,103 +184,132 @@ def show_confusion_matrix(tn, fp, fn, tp):
 # COMPONENT-WISE EVALUATION (professor requirement)
 # ─────────────────────────────────────────────────────────────────────
 def evaluate_components_separately(model, feature_columns, X_test, y_test, urls_test):
-    console.print(Panel("[bold cyan]Evaluating each system component independently...[/bold cyan]",
-                        title="[bold cyan]COMPONENT-WISE EVALUATION[/bold cyan]", border_style="cyan"))
+    console.print(Panel(
+        "[bold cyan]Evaluating ML model, rule-based method, and hybrid system separately...[/bold cyan]",
+        title="[bold cyan]COMPONENT-WISE EVALUATION[/bold cyan]",
+        border_style="cyan"
+    ))
 
-    # 1. ML Model alone
+    # Component 1: ML Model alone
     y_pred_ml = model.predict(X_test)
     y_prob_ml = model.predict_proba(X_test)[:, 1]
-    acc_ml    = accuracy_score(y_test, y_pred_ml)
-    prec_ml   = precision_score(y_test, y_pred_ml, zero_division=0)
-    rec_ml    = recall_score(y_test, y_pred_ml, zero_division=0)
-    f1_ml     = f1_score(y_test, y_pred_ml, zero_division=0)
-    auc_ml    = roc_auc_score(y_test, y_prob_ml)
-    cm_ml     = confusion_matrix(y_test, y_pred_ml)
+
+    acc_ml = accuracy_score(y_test, y_pred_ml)
+    prec_ml = precision_score(y_test, y_pred_ml, zero_division=0)
+    rec_ml = recall_score(y_test, y_pred_ml, zero_division=0)
+    f1_ml = f1_score(y_test, y_pred_ml, zero_division=0)
+
+    cm_ml = confusion_matrix(y_test, y_pred_ml)
     tn_ml, fp_ml, fn_ml, tp_ml = cm_ml.ravel()
 
     console.print(Panel(
         f"""
-[bold cyan]Component 1: ML Voting Ensemble (Random Forest + LightGBM)[/bold cyan]
+Component 1: ML Voting Ensemble Model
 
-  Accuracy  : [bold green]{acc_ml:.4f}[/bold green]  ({acc_ml*100:.2f}%)
-  Precision : [bold green]{prec_ml:.4f}[/bold green]  ({prec_ml*100:.2f}%)
-  Recall    : [bold green]{rec_ml:.4f}[/bold green]  ({rec_ml*100:.2f}%)
-  F1 Score  : [bold green]{f1_ml:.4f}[/bold green]  ({f1_ml*100:.2f}%)
-  ROC-AUC   : [bold green]{auc_ml:.4f}[/bold green]
+Accuracy  : {acc_ml:.4f} ({acc_ml*100:.2f}%)
+Precision : {prec_ml:.4f} ({prec_ml*100:.2f}%)
+Recall    : {rec_ml:.4f} ({rec_ml*100:.2f}%)
+F1 Score  : {f1_ml:.4f} ({f1_ml*100:.2f}%)
 
-  Confusion Matrix  →  TN={tn_ml:,}  FP={fp_ml:,}  FN={fn_ml:,}  TP={tp_ml:,}
-
-[bold yellow]Dataset Limitations:[/bold yellow]
-  • Model relies purely on URL lexical features — no page content analysis.
-  • Performance depends on dataset balance; real-world distributions may differ.
-  • Novel phishing campaigns with clean URLs may evade detection.
+Confusion Matrix:
+TN = {tn_ml:,}
+FP = {fp_ml:,}
+FN = {fn_ml:,}
+TP = {tp_ml:,}
         """,
-        title="[bold green]ML MODEL — Standalone Performance[/bold green]", border_style="green"))
+        title="[bold green]ML MODEL PERFORMANCE[/bold green]",
+        border_style="green"
+    ))
 
-    # 2. Rule-Based alone
+    # Component 2: Rule-Based method alone
     rb_preds = pd.Series(
         [1 if calculate_rule_based_risk(str(u)) >= 5 else 0 for u in urls_test],
         index=y_test.index
     )
-    acc_rb  = accuracy_score(y_test, rb_preds)
+
+    acc_rb = accuracy_score(y_test, rb_preds)
     prec_rb = precision_score(y_test, rb_preds, zero_division=0)
-    rec_rb  = recall_score(y_test, rb_preds, zero_division=0)
-    f1_rb   = f1_score(y_test, rb_preds, zero_division=0)
-    cm_rb   = confusion_matrix(y_test, rb_preds)
+    rec_rb = recall_score(y_test, rb_preds, zero_division=0)
+    f1_rb = f1_score(y_test, rb_preds, zero_division=0)
+
+    cm_rb = confusion_matrix(y_test, rb_preds)
     tn_rb, fp_rb, fn_rb, tp_rb = cm_rb.ravel()
 
     console.print(Panel(
         f"""
-[bold cyan]Component 2: Rule-Based Heuristic System[/bold cyan]
-  (Threshold: Risk Score >= 5/10 → Phishing)
+Component 2: Rule-Based Heuristic Method
 
-  Accuracy  : [bold yellow]{acc_rb:.4f}[/bold yellow]  ({acc_rb*100:.2f}%)
-  Precision : [bold yellow]{prec_rb:.4f}[/bold yellow]  ({prec_rb*100:.2f}%)
-  Recall    : [bold yellow]{rec_rb:.4f}[/bold yellow]  ({rec_rb*100:.2f}%)
-  F1 Score  : [bold yellow]{f1_rb:.4f}[/bold yellow]  ({f1_rb*100:.2f}%)
+Accuracy  : {acc_rb:.4f} ({acc_rb*100:.2f}%)
+Precision : {prec_rb:.4f} ({prec_rb*100:.2f}%)
+Recall    : {rec_rb:.4f} ({rec_rb*100:.2f}%)
+F1 Score  : {f1_rb:.4f} ({f1_rb*100:.2f}%)
 
-  Confusion Matrix  →  TN={tn_rb:,}  FP={fp_rb:,}  FN={fn_rb:,}  TP={tp_rb:,}
-
-[bold yellow]Limitations:[/bold yellow]
-  • Static keyword rules — cannot learn from new attack patterns.
-  • High false positive rate on legitimate security-related domains.
-  • Easily bypassed if attacker avoids flagged keywords/TLDs.
+Confusion Matrix:
+TN = {tn_rb:,}
+FP = {fp_rb:,}
+FN = {fn_rb:,}
+TP = {tp_rb:,}
         """,
-        title="[bold yellow]RULE-BASED SYSTEM — Standalone Performance[/bold yellow]", border_style="yellow"))
+        title="[bold yellow]RULE-BASED PERFORMANCE[/bold yellow]",
+        border_style="yellow"
+    ))
 
-    # 3. Hybrid combined
+    # Component 3: Hybrid system
     hybrid_preds = pd.Series(
-        [1 if ((p >= 0.85 and calculate_rule_based_risk(str(u)) >= 3) or
-               (calculate_rule_based_risk(str(u)) >= 5 and p >= 0.45)) else 0
-         for p, u in zip(y_prob_ml, urls_test)],
+        [
+            1 if (
+                (p >= 0.85 and calculate_rule_based_risk(str(u)) >= 3)
+                or (calculate_rule_based_risk(str(u)) >= 5 and p >= 0.45)
+            ) else 0
+            for p, u in zip(y_prob_ml, urls_test)
+        ],
         index=y_test.index
     )
-    acc_h  = accuracy_score(y_test, hybrid_preds)
+
+    acc_h = accuracy_score(y_test, hybrid_preds)
     prec_h = precision_score(y_test, hybrid_preds, zero_division=0)
-    rec_h  = recall_score(y_test, hybrid_preds, zero_division=0)
-    f1_h   = f1_score(y_test, hybrid_preds, zero_division=0)
-    cm_h   = confusion_matrix(y_test, hybrid_preds)
+    rec_h = recall_score(y_test, hybrid_preds, zero_division=0)
+    f1_h = f1_score(y_test, hybrid_preds, zero_division=0)
+
+    cm_h = confusion_matrix(y_test, hybrid_preds)
     tn_h, fp_h, fn_h, tp_h = cm_h.ravel()
 
     console.print(Panel(
         f"""
-[bold cyan]Component 3: Hybrid System (ML Ensemble + Rule-Based)[/bold cyan]
+Component 3: Combined Hybrid System
 
-  Accuracy  : [bold green]{acc_h:.4f}[/bold green]  ({acc_h*100:.2f}%)
-  Precision : [bold green]{prec_h:.4f}[/bold green]  ({prec_h*100:.2f}%)
-  Recall    : [bold green]{rec_h:.4f}[/bold green]  ({rec_h*100:.2f}%)
-  F1 Score  : [bold green]{f1_h:.4f}[/bold green]  ({f1_h*100:.2f}%)
+Accuracy  : {acc_h:.4f} ({acc_h*100:.2f}%)
+Precision : {prec_h:.4f} ({prec_h*100:.2f}%)
+Recall    : {rec_h:.4f} ({rec_h*100:.2f}%)
+F1 Score  : {f1_h:.4f} ({f1_h*100:.2f}%)
 
-  Confusion Matrix  →  TN={tn_h:,}  FP={fp_h:,}  FN={fn_h:,}  TP={tp_h:,}
-
-[bold green]Hybrid Advantage:[/bold green]
-  • Dual-validation reduces both false positives and false negatives.
-  • Rule-based layer catches obvious structural indicators instantly.
-  • ML layer generalises to unseen attack patterns.
+Confusion Matrix:
+TN = {tn_h:,}
+FP = {fp_h:,}
+FN = {fn_h:,}
+TP = {tp_h:,}
         """,
-        title="[bold green]HYBRID SYSTEM — Combined Performance[/bold green]", border_style="green"))
+        title="[bold cyan]HYBRID SYSTEM PERFORMANCE[/bold cyan]",
+        border_style="cyan"
+    ))
 
-   
+    # Component 4: API Layer
+    console.print(Panel(
+        """
+Component 4: External Threat Intelligence APIs
+
+Google Safe Browsing API:
+Used to check whether a URL is reported as phishing, malware, social engineering, or unwanted software.
+
+VirusTotal API:
+Used to check whether multiple security vendors have reported a URL as malicious or suspicious.
+
+Note:
+The APIs were evaluated qualitatively because live API results depend on database coverage, request limits, and whether a URL has already been reported.
+        """,
+        title="[bold magenta]API LAYER EVALUATION[/bold magenta]",
+        border_style="magenta"
+    ))
 
 
 
@@ -324,7 +353,9 @@ def train_random_forest_model():
     if os.path.exists(MODEL_PATH):
         console.print(Panel(
             "[bold green]Loading saved model from disk...[/bold green]",
-            title="[bold cyan]MODEL LOAD[/bold cyan]", border_style="cyan"))
+            title="[bold cyan]MODEL LOAD[/bold cyan]",
+            border_style="cyan"
+        ))
         saved_data = joblib.load(MODEL_PATH)
         return saved_data["model"], saved_data["features"]
 
@@ -333,48 +364,78 @@ def train_random_forest_model():
         return None, None
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+        X,
+        y,
+        test_size=0.2,
+        random_state=42,
+        stratify=y
     )
-    urls_test = all_urls[X_test.index]
+
+    urls_test = pd.Series(all_urls[X_test.index], index=y_test.index)
 
     model, model_name = build_fast_model()
 
     console.print(Panel(
         f"[bold cyan]Training {model_name}...[/bold cyan]\n"
         "[bold green]Expected time: 10–40 seconds[/bold green]",
-        title="[bold cyan]MODEL TRAINING[/bold cyan]", border_style="cyan"))
+        title="[bold cyan]MODEL TRAINING[/bold cyan]",
+        border_style="cyan"
+    ))
 
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
-    accuracy  = accuracy_score(y_test, y_pred)
+    accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred, zero_division=0)
-    recall    = recall_score(y_test, y_pred, zero_division=0)
-    f1        = f1_score(y_test, y_pred, zero_division=0)
-    cm        = confusion_matrix(y_test, y_pred)
+    recall = recall_score(y_test, y_pred, zero_division=0)
+    f1 = f1_score(y_test, y_pred, zero_division=0)
+
+    cm = confusion_matrix(y_test, y_pred)
     tn, fp, fn, tp = cm.ravel()
 
     console.print(Panel(
         f"""
 [bold green]{model_name} — Trained Successfully[/bold green]
 
-[bold cyan]── Holdout Test Performance ──[/bold cyan]
+── Holdout Test Performance ──
 
-  Accuracy  : [bold green]{accuracy:.4f}[/bold green]  →  {accuracy*100:.2f}%
-  Precision : [bold green]{precision:.4f}[/bold green]  →  {precision*100:.2f}%
-  Recall    : [bold green]{recall:.4f}[/bold green]  →  {recall*100:.2f}%
-  F1 Score  : [bold green]{f1:.4f}[/bold green]  →  {f1*100:.2f}%
+Accuracy  : {accuracy:.4f}  →  {accuracy*100:.2f}%
+Precision : {precision:.4f}  →  {precision*100:.2f}%
+Recall    : {recall:.4f}  →  {recall*100:.2f}%
+F1 Score  : {f1:.4f}  →  {f1*100:.2f}%
 
-  Test samples : {len(y_test):,}
-  Correct      : [bold green]{tp+tn:,}[/bold green]
-  Wrong        : [bold red]{fp+fn:,}[/bold red]
+Test samples : {len(y_test):,}
+Correct      : {tp+tn:,}
+Wrong        : {fp+fn:,}
+
+Confusion Matrix:
+TN = {tn:,}
+FP = {fp:,}
+FN = {fn:,}
+TP = {tp:,}
         """,
-        title="[bold cyan]MODEL PERFORMANCE[/bold cyan]", border_style="cyan"))
+        title="[bold cyan]MODEL PERFORMANCE[/bold cyan]",
+        border_style="cyan"
+    ))
 
-    joblib.dump({"model": model, "features": X.columns.tolist()}, MODEL_PATH)
+    evaluate_components_separately(
+        model,
+        X.columns.tolist(),
+        X_test,
+        y_test,
+        urls_test
+    )
+
+    joblib.dump(
+        {"model": model, "features": X.columns.tolist()},
+        MODEL_PATH
+    )
+
     console.print(Panel(
         "[bold green]Model saved to disk. Future runs will load instantly.[/bold green]",
-        title="[bold cyan]MODEL SAVED[/bold cyan]", border_style="cyan"))
+        title="[bold cyan]MODEL SAVED[/bold cyan]",
+        border_style="cyan"
+    ))
 
     return model, X.columns.tolist()
 
@@ -408,7 +469,7 @@ def check_google_safe_browsing(url):
         return False
 
 
-VT_API_KEY = "Hide for security"
+VT_API_KEY = "your key"
 
 
 def check_virustotal(url):
