@@ -57,14 +57,6 @@ The system evaluates multiple security indicators, including:
 - Website Reputation Analysis
 - Cybersecurity Education
 
-## Future Improvements
-
-- Deep Learning Integration
-- Real-Time Browser Extension
-- Expanded Threat Intelligence Sources
-- Enhanced Feature Engineering
-- Cloud-Based Deployment
-
 ## Skills Demonstrated
 
 - Machine Learning
@@ -74,10 +66,6 @@ The system evaluates multiple security indicators, including:
 - Data Analysis
 - Security Research
 - API Integration
-
-## Author
-
-**Shushant Singh Kathait**
 
 Cybersecurity Graduate | IT & Cybersecurity Professional
 
