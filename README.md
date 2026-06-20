@@ -70,7 +70,7 @@ The system evaluates multiple security indicators, including:
 Cybersecurity Graduate | IT & Cybersecurity Professional
 
 ## Results
-Model Performace
+Model Performance
 
 ![Model Performance](screenshots/model-performance.png)
 
