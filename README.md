@@ -69,6 +69,17 @@ The system evaluates multiple security indicators, including:
 
 Cybersecurity Graduate | IT & Cybersecurity Professional
 
+## Results
+
+![Model Performance](screenshots/model-performance.png)
+
+![Confusion Matrix](screenshots/confusion_matrix.png)
+
+## Installation
+
+```bash
+pip install -r requirements.txt
+
 ## Contact
 
 🔗 LinkedIn: [Shushant Singh Kathait](https://www.linkedin.com/in/shushant-singh-kathait-0260a038a/)
