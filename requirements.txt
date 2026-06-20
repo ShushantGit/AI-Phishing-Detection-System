@@ -1,1 +1,9 @@
-
+pandas
+numpy
+scikit-learn
+requests
+joblib
+colorama
+rich
+pyfiglet
+lightgbm
